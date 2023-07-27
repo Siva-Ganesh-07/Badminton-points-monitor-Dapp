@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<head>
+    <title>Winner Details</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+            margin-top: 15%;
+        }
+
+        h2{
+            background-image: linear-gradient(to right top, #f60d95, #fb007e, #fc0066, #f9004f, #f31b38);
+            height: 60px;
+            color: white;
+            margin-top: -15%;
+        }
+
+        .heade{
+            text-align: center;
+            height: 17cm;
+            width: 20%;
+            padding-top: 5%;
+            margin-left: 80%;
+            margin-top: -1.3%;
+            background-image: linear-gradient(to right top, #f60d95, #fb007e, #fc0066, #f9004f, #f31b38);
+        }
+
+        .heade button{
+            
+            padding: 1.5%;
+            width: 35%; 
+            border-color: transparent;
+            color: white;
+            background-color: transparent;
+        }
+
+        .winnerAddr{
+            margin-top: -42%;
+            margin-left: -17%;
+        }
+
+        .winnerAddr button{
+            padding: 0.65%;
+            border-color: transparent;
+            background-color: #1877f2;
+            color: white;
+        }
+
+        .winnerAddr p{
+            font-size: x-large;
+        }
+
+        .rewards{
+            float: left;
+            margin-left: 6%;
+        }
+
+        .rewards p{
+           font-size: large;
+           padding: 7%;
+        }
+
+        .rewards input{
+            padding: 2.5%;
+        }
+
+        .rewards button{
+            width: 50%;
+            padding: 2%;
+            border-color: transparent;
+            background-color: #1877f2;
+            color: white;
+        }
+
+        .balanceToken{
+            float: left;
+            margin-top: 0.5%;
+            margin-left: 42%;
+        }
+
+        .balanceToken input{
+            padding: 2.5%;
+        }
+
+        .balanceToken button{
+            width: 50%;
+            padding: 2%;
+            border-color: transparent;
+            background-color: #1877f2;
+            color: white;
+        }
+
+        .reset{
+            margin-top: 20%;
+            margin-left: 22%;
+        }
+
+        .reset button{
+            width: 12%;
+            margin-top: 10%;
+            padding: 1%;
+            border-color: transparent;
+            background-color: #1877f2;
+            color: white;
+        }
+
+        .home{
+            width: 6%;
+            margin-top: -2.75%;
+            margin-left: 68%;
+            padding: 0.75%;
+            border-color: transparent;
+            background-color: #1877f2;
+            color: white;
+        }
+        
+        button:hover{
+            color: white;
+            background-color: black;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <h2>Winner Details</h2>
+
+    <div class="heade">
+        <button onclick="connectMetamask()"><b>Connect MetaMask</b></button>
+        <p id="metaArea"></p><br>
+		<button onclick="connectContract()"><b>Connect Contract</b></button>
+        <p id="contractArea"></p><br>
+        <button onclick="Owner()"><b>Owner</b></button>
+        <p id="ownerArea"></p><br>
+    </div>
+    
+    <div class="winnerAddr">
+        <button onclick="win()"><b>Winner of This Match</b></button>
+        <p id="winner"></p>
+    </div>
+
+    <div class="rewards">
+        <p style="border-width:3px; border-style:solid; border-color:#050505;"><b>Reward Token</b></p>
+        <input type="text" id="addr" placeholder="Address"/><hr>
+        <input type="number" id="token" placeholder="Token"/><br><hr>
+        <button onclick="submitToken()"><b>Send</b></button>
+    </div>
+
+    <div class="balanceToken">
+        <p style="border-width:3px; border-style:solid; border-color:#050505; padding: 4%;"><b>Check the Balance</b></p>
+        <input type="text" id="balance" placeholder="Address"/><hr>
+        <button onclick="balance()"><b>Balance</b></button>
+        <p id="balancedis"></p>
+    </div>
+
+    <div class="reset">
+        <button onclick="resetButton()"><b>Reset</b></button>
+    </div>
+
+    <div class="home">
+        <form action="first" method="POST">
+            <input type="submit" style="background-color: #1877f2; color: white; border-color: transparent; padding: 0.25%;" id="next" value="Home Page"/>
+        </form>
+    </div>
+
+    <script>
+        //Connect MetaMask
+		let account;
+		const connectMetamask = async() => {
+			if(window.ethereum !== "undefined") {
+				const accounts = await ethereum.request({method: "eth_requestAccounts"});
+				account = accounts[0];
+				document.getElementById("metaArea").innerHTML = account;
+			}
+		}
+
+        //Connect Contract
+		const connectContract = async() => {
+            const ABI = [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "string",
+                            "name": "_name",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "_id",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address payable",
+                            "name": "_addr",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "addPlayers",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "_playerscount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "tokenOwner",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "tokens",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "Approval",
+                    "type": "event"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "tokens",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "approve",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "success",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "playerId",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "firstSet",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "reset",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "success",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "playerId",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "secondSet",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "playerId",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "thirdSet",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "tokens",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "transfer",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "success",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "from",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "tokens",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "Transfer",
+                    "type": "event"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "from",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "tokens",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "transferFrom",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "success",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "tokenOwner",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "allowance",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "remaining",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "tokenOwner",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "balanceof",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "decimmal",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "fir",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstPoint",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstSetFirstPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstSetFirstPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstSetSecondPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstSetSecondPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstsetWinner",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "firstwinCount",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "i",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "j",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "k",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "name",
+                    "outputs": [
+                        {
+                            "internalType": "string",
+                            "name": "",
+                            "type": "string"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "overallWinner",
+                    "outputs": [
+                        {
+                            "internalType": "address payable",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "owner",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "player",
+                    "outputs": [
+                        {
+                            "internalType": "string",
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "id",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address payable",
+                            "name": "addr",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "playerscount",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "points",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "samePointsFirst",
+                    "outputs": [
+                        {
+                            "internalType": "int256",
+                            "name": "",
+                            "type": "int256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "samePointsSecond",
+                    "outputs": [
+                        {
+                            "internalType": "int256",
+                            "name": "",
+                            "type": "int256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "samePointsThird",
+                    "outputs": [
+                        {
+                            "internalType": "int256",
+                            "name": "",
+                            "type": "int256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondPoint",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondSetFirstPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondSetFirstPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondSetSecondPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondSetSecondPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondsetWinner",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "secondwinCount",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "set",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "symbol",
+                    "outputs": [
+                        {
+                            "internalType": "string",
+                            "name": "",
+                            "type": "string"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "thirdSetFirstPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "thirdSetFirstPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "thirdSetSecondPlayerPoints",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "thirdSetSecondPlayerSame",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "thirdsetWinner",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "totalSuppIy",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ];
+            const Address = "0x5c3Fe50a1c7de3F53b6A3331E6De7e371440d706";
+            window.web3 = await new Web3(window.ethereum);
+            window.contract = await new window.web3.eth.Contract(ABI, Address);
+            document.getElementById("contractArea").innerHTML = "Contract Connected Successfully";
+        }
+
+        //Display Owner
+		const Owner = async() => {
+			data = await window.contract.methods.owner().call();
+			document.getElementById("ownerArea").innerHTML = data;
+		}
+        
+        //Display Winner
+        const win = async() =>{
+            data = await window.contract.methods.overallWinner().call();
+            document.getElementById("winner").innerHTML = data;
+        }
+
+        //Reward Tokens
+        const submitToken = async() => {
+            address = document.getElementById("addr").value;
+            token = document.getElementById("token").value;
+            await contract.methods.transfer(address, token).send({from: account});
+        }
+
+        //Token Balance
+        const balance = async() => {
+            address = document.getElementById("balance").value;
+            data = await contract.methods.balanceof(address).call();
+            document.getElementById("balancedis").innerHTML = data;
+        }
+
+        //Reset
+        const resetButton = async() => {
+            data = await contract.methods.reset().send({from: account});   
+        }
+
+    </script>
+</body>
